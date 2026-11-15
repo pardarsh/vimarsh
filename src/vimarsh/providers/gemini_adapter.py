@@ -37,7 +37,7 @@ class GeminiProvider(LLMProvider):
         model_id: str,
         max_input_tokens: int,
         thinking_level: str = "low",
-        timeout_seconds: float = 120,
+        timeout_seconds: float = 300,
         client=None,
     ):
         if not api_key and client is None:

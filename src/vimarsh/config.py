@@ -34,7 +34,12 @@ class Settings:
     # "low" keeps calls fast; set GEMINI_THINKING_LEVEL to "none" to omit it
     # (for models without thinking levels).
     gemini_thinking_level: str = "low"
-    request_timeout_seconds: float = 120.0
+    # Sent to Gemini as the server-side deadline too; long bills on a busy
+    # model can need several minutes.
+    request_timeout_seconds: float = 300.0
+    # Stop the run after this many bills in a row fail on every provider
+    # (an outage), leaving the rest pending instead of burning the job's time.
+    max_consecutive_failures: int = 2
     gemini_api_key: str = field(default="", repr=False)
     groq_api_key: str = field(default="", repr=False)
     request_delay_seconds: float = 12.0
@@ -71,7 +76,8 @@ class Settings:
             gemini_model=_str("GEMINI_MODEL", "gemini-3.8-flash"),
             groq_model=_str("GROQ_MODEL", "llama-3.3-70b-versatile"),
             gemini_thinking_level=_str("GEMINI_THINKING_LEVEL", "low").lower(),
-            request_timeout_seconds=_float("REQUEST_TIMEOUT_SECONDS", 120.0),
+            request_timeout_seconds=_float("REQUEST_TIMEOUT_SECONDS", 300.0),
+            max_consecutive_failures=_int("MAX_CONSECUTIVE_FAILURES", 2),
             gemini_api_key=_str("GEMINI_API_KEY", ""),
             groq_api_key=_str("GROQ_API_KEY", ""),
             request_delay_seconds=_float("REQUEST_DELAY_SECONDS", 12.0),

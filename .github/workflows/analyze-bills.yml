@@ -1,0 +1,37 @@
+# By hand only: analyse the bills you name, e.g. to add one the daily run has
+# not reached yet, or to redo one with force after changing the model or prompt.
+name: Analyze specific bills
+
+on:
+  workflow_dispatch:
+    inputs:
+      bill_ids:
+        description: "Bill IDs, comma-separated (e.g. ls-2026-97, rs-2026-lxxii)"
+        required: true
+      force:
+        description: "Re-analyse even if the bill's text has not changed"
+        type: boolean
+        default: false
+      since_date:
+        description: "Only for bills introduced before SINCE_DATE (YYYY-MM-DD)"
+        required: false
+        default: ""
+
+permissions:
+  contents: write
+
+# Shared with analyze.yml so two runs never push at the same time.
+concurrency:
+  group: analyze
+  cancel-in-progress: false
+
+jobs:
+  analyze:
+    uses: ./.github/workflows/_analyze.yml
+    with:
+      bill_ids: ${{ inputs.bill_ids }}
+      force: ${{ inputs.force }}
+      since_date: ${{ inputs.since_date }}
+    secrets:
+      GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+      GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}

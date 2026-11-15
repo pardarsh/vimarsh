@@ -5,7 +5,7 @@ name: Deploy site
 
 on:
   workflow_run:
-    workflows: ["Analyze bills"]
+    workflows: ["Analyze bills (daily)", "Analyze specific bills"]
     types: [completed]
   push:
     branches: [master]

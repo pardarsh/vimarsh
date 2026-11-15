@@ -66,7 +66,8 @@ Actions → Variables); all are optional.
 | `GEMINI_MODEL` | `gemini-3.8-flash` | Gemini model id |
 | `GROQ_MODEL` | `llama-3.3-70b-versatile` | Groq model id |
 | `GEMINI_THINKING_LEVEL` | `low` | Gemini thinking level; `none` to omit it |
-| `REQUEST_TIMEOUT_SECONDS` | `120` | Give up on a model call after this long (then retry or fall back) |
+| `REQUEST_TIMEOUT_SECONDS` | `300` | Give up on a model call after this long (then retry or fall back); also Gemini's server-side deadline |
+| `MAX_CONSECUTIVE_FAILURES` | `2` | Stop a run after this many bills in a row fail on every provider |
 | `REQUEST_DELAY_SECONDS` | `12` | Minimum gap between API calls |
 | `MAX_BILLS_PER_RUN` | `15` | Bills analysed per run; the rest stay pending |
 | `MAX_RETRIES` | `3` | Retries on 429/503 before falling back |
@@ -106,19 +107,24 @@ Open `public/index.html` in a browser.
    `CNAME` record pointing `vimarsh.pardarsh` at `pardarsh.github.io`. Tick
    **Enforce HTTPS** once the certificate is issued.
 2. Add the `GEMINI_API_KEY` (and optionally `GROQ_API_KEY`) secrets.
-3. Run the **Analyze bills** workflow once by hand, or wait for the daily run
-   at 02:30 UTC (08:00 IST).
+3. Run **Analyze bills (daily)** once by hand, or wait for its daily run at
+   02:30 UTC (08:00 IST).
 
-To analyse one bill (or re-analyse it) from the GitHub website: Actions →
-**Analyze bills** → **Run workflow**, enter its ID (the file name under
-`content/bills/`, for example `ls-2026-153`), tick **force** to redo an
-already-analysed bill, and set **since_date** for bills introduced before
-`SINCE_DATE`. Locally: `vimarsh run --bill ls-2026-153 --force`.
+There are three workflows:
 
-The analysis workflow (`analyze.yml`) commits only `data/` and `content/`, at
-most once per run and only when at least one bill was analysed.
-The deploy workflow (`deploy.yml`) runs after it finishes and on pushes to
-`master`; it never commits, so the two cannot trigger each other in a loop.
+* **Analyze bills (daily)** (`analyze.yml`): every day, and by hand, analyses
+  up to `MAX_BILLS_PER_RUN` pending bills, newest first, introduced on or
+  after `SINCE_DATE`.
+* **Analyze specific bills** (`analyze-bills.yml`): by hand only. Enter bill
+  IDs (the file name under `content/bills/`, for example `ls-2026-97`), tick
+  **force** to redo an already-analysed bill, and set **since_date** for bills
+  introduced before `SINCE_DATE`. Locally: `vimarsh run --bill ls-2026-97 --force`.
+* **Deploy site** (`deploy.yml`): runs after either of the above and on pushes
+  to `master`; it never commits, so it cannot trigger an analysis loop.
+
+Both analysis workflows run the same job (`_analyze.yml`), never at the same
+time, and commit only `data/` and `content/`: at most once per run, and only
+when at least one bill was analysed.
 
 ## Test
 

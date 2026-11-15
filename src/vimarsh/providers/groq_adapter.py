@@ -26,7 +26,7 @@ class GroqProvider(LLMProvider):
         api_key: str,
         model_id: str,
         max_input_tokens: int,
-        timeout_seconds: float = 120,
+        timeout_seconds: float = 300,
         client=None,
     ):
         if not api_key and client is None:

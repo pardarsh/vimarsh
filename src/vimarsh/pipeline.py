@@ -173,7 +173,14 @@ def run(
             return report
         router = Router(providers, settings.request_delay_seconds, settings.max_retries)
 
+    consecutive_failures = 0
     for entry in queue:
+        if consecutive_failures >= settings.max_consecutive_failures:
+            log.error(
+                "Stopping after %d bills in a row failed on every provider; the rest stay pending",
+                consecutive_failures,
+            )
+            break
         bill = entry.bill
         try:
             document, content_type = sources.download(entry.source_url, session=session)
@@ -214,7 +221,9 @@ def run(
         except AllProvidersFailed as exc:
             manifest.update(entry.bill_id, attempts=entry.attempts + 1, last_error=str(exc)[:500])
             manifest.save()
+            consecutive_failures += 1
             continue
+        consecutive_failures = 0
 
         record = build_record(bill, document, text, routed, retrieved_at, settings)
         path = write_record(settings.content_dir, record)

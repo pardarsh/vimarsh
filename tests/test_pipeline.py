@@ -74,7 +74,7 @@ def test_provider_failure_stays_pending(mocked, settings):
     provider = FakeProvider(outcomes=[ProviderError("quota")] * 4)
     report = pipeline.run(settings, router=router(provider))
     assert report.processed == []
-    entry = Manifest.load(settings.manifest_path).entries["ls-2026-153"]
+    entry = Manifest.load(settings.manifest_path).entries["ls-2026-155"]
     assert (entry.status, entry.attempts) == ("pending", 1)
     assert "quota" in entry.last_error
 
@@ -146,3 +146,11 @@ def test_single_bill_not_found(mocked, settings):
     report = pipeline.run(settings, router=router(FakeProvider()), bill_ids=["rs-1990-x"])
     assert report.not_found == ["rs-1990-x"]
     assert "not found rs-1990-x" in report.summary()
+
+
+def test_outage_stops_run_early(mocked, settings):
+    provider = FakeProvider(outcomes=[ProviderError("down")] * 10)
+    report = pipeline.run(settings, router=router(provider))
+    # Two bills fail in a row, then the run stops; the other two are never tried.
+    assert len(provider.calls) == 2
+    assert len(report.still_pending) == 4
