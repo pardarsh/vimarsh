@@ -41,7 +41,9 @@ official PDF ──► extract.py ──► providers/router.py ──► Gemini
   `processed`, `failed`, `skipped_oversized`), `version_hash` (SHA-256 of the
   document), `source_url`, attempts, last error and `last_updated`. A bill is
   analysed again only when a new document is published and its bytes differ,
-  so reruns cost nothing.
+  so reruns cost nothing. When only a bill's listing details change (for
+  example its status goes from Passed to Assented), its page is updated
+  without calling the model again.
 * **Providers.** `LLMProvider.analyze_bill(text, schema) -> AnalysisResult`
   in `src/vimarsh/providers/base.py`, with adapters for Gemini
   (`google-genai`) and Groq (`groq`). Output is validated with Pydantic.

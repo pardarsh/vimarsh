@@ -83,6 +83,12 @@ h1 { font-size: 2rem; margin: 0.4em 0; }
 
 .tag { margin: 0 6px 6px 0; }
 
+a.pill { text-decoration: none; }
+
+.statuses dt { font-weight: 600; margin-top: 8px; }
+
+.statuses dd { margin: 0 0 0 16px; color: var(--ink-soft); }
+
 .warn { background: var(--warm-soft); color: var(--warm); }
 
 .notice { background: var(--accent-soft); border-radius: 8px; padding: 10px 14px; font-size: 0.95rem; }

@@ -22,14 +22,30 @@ from .publish import DISCLAIMER, read_all
 
 STATIC = Path(__file__).parent / "static"
 
+# Statuses as sansad.in reports them, explained for readers.
+STATUS_HELP = {
+    "Pending": "Introduced and still before Parliament: not yet passed, withdrawn or lapsed.",
+    "Passed": "Passed by Parliament; the President's assent is not yet recorded.",
+    "Assented": "Received the President's assent and became an Act.",
+    "Negatived": "Rejected by a vote in the house.",
+    "Withdrawn": "Withdrawn by the member or minister who introduced it.",
+    "Lapsed": "Lapsed, for example when the Lok Sabha was dissolved before it passed.",
+    "Removed": "Removed from the register of pending bills.",
+    "Not stated": "sansad.in lists no status for this bill.",
+}
+DEFAULT_STATUS_HELP = "Status of the bill in Parliament, as reported by sansad.in."
+
 
 def _env() -> Environment:
-    return Environment(
+    env = Environment(
         loader=PackageLoader("vimarsh", "templates"),
         autoescape=select_autoescape(["html", "xml"]),
         trim_blocks=True,
         lstrip_blocks=True,
     )
+    env.globals["status_help"] = STATUS_HELP
+    env.globals["default_status_help"] = DEFAULT_STATUS_HELP
+    return env
 
 
 def build_feed(records: list[dict], site_url: str, limit: int = 50) -> bytes:

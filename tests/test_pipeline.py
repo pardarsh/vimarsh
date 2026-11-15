@@ -154,3 +154,28 @@ def test_outage_stops_run_early(mocked, settings):
     # Two bills fail in a row, then the run stops; the other two are never tried.
     assert len(provider.calls) == 2
     assert len(report.still_pending) == 4
+
+
+def test_status_change_updates_page_without_reanalysis(listing, settings):
+    with responses.RequestsMock(assert_all_requests_are_fired=False) as rsps:
+        rsps.get(sources.LISTINGS["rs"], json=listing)
+        rsps.get(sources.LISTINGS["ls"], status=404)
+        rsps.get(DOCS, body=PDF, content_type="application/pdf")
+        pipeline.run(settings, router=router(FakeProvider()))
+    path = settings.content_dir / "2026" / "ls-2026-155.md"
+    assert read_record(path)["status"] == "Passed"
+
+    for record in listing["records"]:
+        if record["billNumber"].strip() == "155":
+            record["status"] = "Assented"
+    provider = FakeProvider()
+    with responses.RequestsMock(assert_all_requests_are_fired=False) as rsps:
+        rsps.get(sources.LISTINGS["rs"], json=listing)
+        rsps.get(sources.LISTINGS["ls"], status=404)
+        report = pipeline.run(settings, router=router(provider))
+    assert report.refreshed == ["ls-2026-155"]
+    assert provider.calls == []
+    record = read_record(path)
+    assert record["status"] == "Assented"
+    assert record["listing_updated_at"]
+    assert "status updated 1" in report.summary()

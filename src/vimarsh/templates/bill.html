@@ -12,7 +12,9 @@
         </p>
         <h1>{{ bill.title }}</h1>
         <p class="meta">
-            Introduced {{ bill.introduced_date }} · <span class="pill">{{ bill.status }}</span>
+            Introduced {{ bill.introduced_date }} · <a class="pill"
+    href="{{ root }}about.html#status"
+    title="{{ status_help.get(bill.status or 'Not stated', default_status_help) }}">In Parliament: {{ bill.status or "Not stated" }}</a>
         </p>
         <p class="notice">{{ disclaimer }}</p>
         {% if bill.partial_analysis %}

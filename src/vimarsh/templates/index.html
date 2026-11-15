@@ -18,7 +18,9 @@
                 <li class="card"
                     data-search="{{ (r.title ~ ' ' ~ r.ministry ~ ' ' ~ r.analysis.affected_sectors|join(' '))|lower }}">
                     <p class="meta">
-                        {{ r.house }} · Bill {{ r.bill_number }} of {{ r.year }} · introduced {{ r.introduced_date }} · <span class="pill">{{ r.status }}</span>
+                        {{ r.house }} · Bill {{ r.bill_number }} of {{ r.year }} · introduced {{ r.introduced_date }} · <a class="pill"
+    href="{{ root }}about.html#status"
+    title="{{ status_help.get(r.status or 'Not stated', default_status_help) }}">In Parliament: {{ r.status or "Not stated" }}</a>
                         {% if r.partial_analysis %}<span class="pill warn">partial</span>{% endif %}
                     </p>
                     <h2>

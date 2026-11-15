@@ -71,12 +71,16 @@ def test_build_site(content, tmp_path):
     assert "law &lt;&amp;&gt;" in page
     assert "gemini-3.8-flash" in page
     assert "Partial analysis" in page
+    assert "In Parliament: Passed" in page and "In Parliament: Passed" in index
+    assert 'href="../about.html#status"' in page
+    assert "assent is not yet recorded" in page
     assert "resp-1" in page and "gemini-3.8-flash-001" in page
     assert "Checked &lt;clause 2&gt; first." in page
     assert "fell back after: groq: 503" in page
     assert "thinking_level = <code>low</code>" in page
     about = (out / "about.html").read_text(encoding="utf-8")
     assert "You analyse bills of the Parliament of India" in about
+    assert 'id="status"' in about and "became an Act" in about
     assert 'href="../style.css"' in page
     assert (out / "style.css").exists() and (out / "favicon.png").exists()
     assert (out / "about.html").exists() and (out / ".nojekyll").exists()

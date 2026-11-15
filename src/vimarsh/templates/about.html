@@ -15,6 +15,18 @@
         <p>
             Every analysis records the official document URL, SHA-256 hashes of the document and of the extracted text, the provider, the requested and served model, the provider's response ID, the generation settings (temperature, thinking level), token usage including thinking tokens, how long the call took and how many attempts it needed, any fallback from another provider, the prompt and schema versions with a hash of both, the software versions, and a link to the public GitHub Actions run that produced it. Where the model provides one, its own summary of its reasoning is published too. Anyone can download the official text, check its hash and rerun the analysis. Everything is kept in the public <a href="https://github.com/pardarsh/vimarsh">git repository</a>, so every change has history.
         </p>
+        <h2 id="status">Bill status</h2>
+        <p>
+            The "In Parliament" label is the bill's status as sansad.in reports it, updated daily. It is about the bill, not about Vimarsh's analysis.
+        </p>
+        <dl class="statuses">
+            {% for name, help in status_help.items() %}
+                <dt>{{ name }}</dt>
+                <dd>
+                    {{ help }}
+                </dd>
+            {% endfor %}
+        </dl>
         <h2 id="prompt">Prompt</h2>
         <p>
             Prompt version {{ prompt_version }}, schema version {{ schema_version }}, SHA-256 <code>{{ prompt_sha256 }}</code>. The model receives this instruction, the JSON Schema below, and the extracted bill text.

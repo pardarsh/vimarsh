@@ -21,7 +21,7 @@ from .extract import ExtractionError, extract_text
 from .manifest import Manifest, now_iso
 from .providers import AllProvidersFailed, Router, build_providers
 from .providers.base import PROMPT_SHA256, PROMPT_VERSION, SCHEMA_VERSION, estimate_tokens
-from .publish import write_record
+from .publish import read_record, write_record
 
 log = logging.getLogger(__name__)
 
@@ -35,12 +35,14 @@ class RunReport:
     failed: list[str] = field(default_factory=list)
     oversized: list[str] = field(default_factory=list)
     not_found: list[str] = field(default_factory=list)
+    refreshed: list[str] = field(default_factory=list)
 
     def summary(self) -> str:
         return (
             f"discovered {self.discovered}, processed {len(self.processed)}, "
             f"unchanged {len(self.unchanged)}, pending {len(self.still_pending)}, "
             f"failed {len(self.failed)}, oversized {len(self.oversized)}"
+            + (f", status updated {len(self.refreshed)}" if self.refreshed else "")
             + (f", not found {', '.join(self.not_found)}" if self.not_found else "")
         )
 
@@ -71,6 +73,41 @@ def run_context() -> dict:
         "workflow_run_url": f"{server}/{repo}/actions/runs/{run_id}",
         "commit": os.environ.get("GITHUB_SHA"),
     }
+
+
+# Record fields that mirror the Sansad listing and can change after analysis.
+LISTING_FIELDS = {
+    "title": "title",
+    "status": "status",
+    "ministry": "ministry",
+    "bill_type": "bill_type",
+    "category": "category",
+}
+
+
+def refresh_listing_fields(manifest: Manifest, settings: Settings) -> list[str]:
+    """Update analysed bills whose listing details changed (for example Passed ->
+    Assented) without a new document. The analysis itself is left untouched."""
+    refreshed = []
+    for entry in manifest.entries.values():
+        if entry.status != "processed" or not entry.output_path:
+            continue
+        path = settings.root / entry.output_path
+        if not path.exists():
+            continue
+        record = read_record(path)
+        changes = {
+            key: entry.bill[src]
+            for key, src in LISTING_FIELDS.items()
+            if src in entry.bill and record.get(key) != entry.bill[src]
+        }
+        if changes:
+            record.update(changes)
+            record["listing_updated_at"] = now_iso()
+            write_record(settings.content_dir, record)
+            refreshed.append(entry.bill_id)
+            log.info("Updated %s from the listing: %s", entry.bill_id, changes)
+    return refreshed
 
 
 def build_record(
@@ -146,6 +183,7 @@ def run(
     for bill in bills:
         manifest.observe(bill.to_dict())
     manifest.save()
+    report.refreshed = refresh_listing_fields(manifest, settings)
 
     if bill_ids:
         queue = []
