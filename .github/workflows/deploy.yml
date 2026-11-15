@@ -43,7 +43,7 @@ jobs:
       - run: vimarsh build --out public && cp CNAME public/
         env:
           SITE_URL: ${{ vars.SITE_URL || format('{0}/', steps.pages.outputs.base_url) }}
-      - uses: actions/upload-pages-artifact@v4
+      - uses: actions/upload-pages-artifact@v5
         with:
           path: public
 
