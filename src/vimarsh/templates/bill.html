@@ -1,0 +1,160 @@
+{% extends "base.html" %}
+{% block title %}{{ bill.title }} · Vimarsh{% endblock %}
+{% block description %}{{ bill.analysis.summary_short }}{% endblock %}
+{% block content %}
+    {% set a = bill.analysis %}
+    {% set s = bill.source %}
+    {% set p = bill.provenance %}
+    <article class="bill">
+        <p class="meta">
+            {{ bill.house }} · Bill {{ bill.bill_number }} of {{ bill.year }} · {{ bill.bill_type }} · {{ bill.category }}
+            {% if bill.ministry %}· {{ bill.ministry }}{% endif %}
+        </p>
+        <h1>{{ bill.title }}</h1>
+        <p class="meta">
+            Introduced {{ bill.introduced_date }} · <span class="pill">{{ bill.status }}</span>
+        </p>
+        <p class="notice">{{ disclaimer }}</p>
+        {% if bill.partial_analysis %}
+            <p class="notice warn">
+                Partial analysis: this bill was too long to analyse in full, so only its beginning and end were sent to the model.
+            </p>
+        {% endif %}
+        <p class="lede">{{ a.summary_short }}</p>
+        <p>
+            <a class="button" href="{{ s.document_url }}">Read the official text</a>
+        </p>
+        <h2>Summary</h2>
+        <ul>
+            {% for item in a.summary_detailed %}<li>{{ item }}</li>{% endfor %}
+        </ul>
+        <h2>Key provisions</h2>
+        <ul>
+            {% for item in a.key_provisions %}<li>{{ item }}</li>{% endfor %}
+        </ul>
+        <h2>Fiscal or legal impact</h2>
+        <p>{{ a.fiscal_or_legal_impact }}</p>
+        <h2>Affected sectors</h2>
+        <p class="tags">
+            {% for tag in a.affected_sectors %}<span class="tag">{{ tag }}</span>{% endfor %}
+        </p>
+        <h2 id="provenance">Provenance</h2>
+        <table class="provenance">
+            <tr>
+                <th>Publisher</th>
+                <td>{{ s.publisher }}</td>
+            </tr>
+            <tr>
+                <th>Listing</th>
+                <td>
+                    <a href="{{ s.listing_url }}">{{ s.listing_url }}</a>
+                </td>
+            </tr>
+            <tr>
+                <th>Document</th>
+                <td>
+                    <a href="{{ s.document_url }}">{{ s.document_stage }}</a>, retrieved {{ s.retrieved_at }}
+                </td>
+            </tr>
+            <tr>
+                <th>Document SHA-256</th>
+                <td>
+                    <code>{{ s.document_sha256 }}</code>
+                </td>
+            </tr>
+            <tr>
+                <th>Text SHA-256</th>
+                <td>
+                    <code>{{ s.text_sha256 }}</code> ({{ s.text_chars }} characters)
+                </td>
+            </tr>
+            <tr>
+                <th>Model</th>
+                <td>
+                    {{ p.provider }} / <code>{{ p.model_id }}</code>
+                    {% if p.model_version and p.model_version != p.model_id %}(served as <code>{{ p.model_version }}</code>){% endif %}
+                </td>
+            </tr>
+            {% if p.parameters %}
+                <tr>
+                    <th>Parameters</th>
+                    <td>
+                        {% for key, value in p.parameters.items() %}
+                            {% if value is not none %}{{ key }} = <code>{{ value }}</code>{% if not loop.last %}, {% endif %}{% endif %}
+                        {% endfor %}
+                    </td>
+                </tr>
+            {% endif %}
+            {% if p.response_id %}
+                <tr>
+                    <th>Response ID</th>
+                    <td>
+                        <code>{{ p.response_id }}</code>
+                        {% if p.finish_reason %}, finished: {{ p.finish_reason }}{% endif %}
+                    </td>
+                </tr>
+            {% endif %}
+            <tr>
+                <th>Tokens</th>
+                <td>
+                    {% if p.usage %}
+                        {% for key, value in p.usage.items() %}
+                            {% if value is not none %}{{ key|replace('_', ' ') }}: {{ value }}{% if not loop.last %}, {% endif %}{% endif %}
+                        {% endfor %}
+                    {% endif %}
+                    (estimated input {{ p.input_tokens_estimate }})
+                </td>
+            </tr>
+            {% if p.latency_seconds is defined %}
+                <tr>
+                    <th>Call</th>
+                    <td>
+                        {{ p.latency_seconds }}s, {{ p.attempts }} attempt{{ "s" if p.attempts != 1 }}
+                        {% if p.fallback_errors %}; fell back after: {{ p.fallback_errors|join("; ") }}{% endif %}
+                    </td>
+                </tr>
+            {% endif %}
+            <tr>
+                <th>Prompt / schema</th>
+                <td>
+                    <a href="{{ root }}about.html#prompt">prompt {{ p.prompt_version }}</a>, schema {{ p.schema_version }}
+                    {% if p.prompt_sha256 %}<code>{{ p.prompt_sha256[:16] }}</code>{% endif %}
+                </td>
+            </tr>
+            <tr>
+                <th>Analysed at</th>
+                <td>{{ p.analyzed_at }}</td>
+            </tr>
+            <tr>
+                <th>Generator</th>
+                <td>
+                    {{ p.generator }}
+                    {% if p.software %}
+                        ({% for key, value in p.software.items() if key != "vimarsh" %}{{ key }} {{ value }}{% if not loop.last %}, {% endif %}{% endfor %})
+                    {% endif %}
+                </td>
+            </tr>
+            {% if p.run and p.run.workflow_run_url %}
+                <tr>
+                    <th>Run</th>
+                    <td>
+                        <a href="{{ p.run.workflow_run_url }}">GitHub Actions log</a>
+                        {% if p.run.commit %}at <code>{{ p.run.commit[:7] }}</code>{% endif %}
+                    </td>
+                </tr>
+            {% elif p.run %}
+                <tr>
+                    <th>Run</th>
+                    <td>{{ p.run.environment }}</td>
+                </tr>
+            {% endif %}
+        </table>
+        {% if p.thought_summary %}
+            <details class="thoughts">
+                <summary>Model's summary of its reasoning</summary>
+                <p class="muted">Written by the model while it worked. It is not a full record of its reasoning.</p>
+                {% for para in p.thought_summary.split("\n\n") %}<p>{{ para }}</p>{% endfor %}
+            </details>
+        {% endif %}
+    </article>
+{% endblock %}

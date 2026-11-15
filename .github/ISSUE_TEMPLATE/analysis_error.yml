@@ -1,0 +1,19 @@
+name: Analysis error
+description: Report a mistake in a bill's analysis.
+title: "analysis: "
+labels: [analysis]
+body:
+  - type: input
+    id: bill
+    attributes:
+      label: Bill page
+      description: Link to the bill's page on the site.
+    validations:
+      required: true
+  - type: textarea
+    id: error
+    attributes:
+      label: What is wrong?
+      description: Quote the analysis and the clause of the official text that contradicts it.
+    validations:
+      required: true

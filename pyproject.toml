@@ -1,0 +1,60 @@
+[build-system]
+requires = ["hatchling>=1.25"]
+build-backend = "hatchling.build"
+
+[project]
+name = "vimarsh"
+version = "0.1.0"
+description = "Daily, attributed AI analysis of Indian parliamentary bills from official sources, published as a static site and RSS feed."
+readme = "README.md"
+requires-python = ">=3.12"
+license = "MIT"
+license-files = ["LICENSE.txt"]
+authors = [{ name = "Lakshay Chauhan" }]
+keywords = ["india", "parliament", "bills", "legislation", "transparency"]
+dependencies = [
+    "beautifulsoup4>=4.12",
+    "feedgen>=1.0",
+    "google-genai>=1.0",
+    "groq>=0.11",
+    "jinja2>=3.1",
+    "pydantic>=2.7",
+    "pypdf>=5.0",
+    "pyyaml>=6.0",
+    "requests>=2.32",
+    "tenacity>=9.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pre-commit>=4.0",
+    "pytest>=8.0",
+    "pytest-cov>=5.0",
+    "responses>=0.25",
+    "ruff>=0.8",
+]
+
+[project.scripts]
+vimarsh = "vimarsh.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/pardarsh/vimarsh"
+Repository = "https://github.com/pardarsh/vimarsh"
+Issues = "https://github.com/pardarsh/vimarsh/issues"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/vimarsh"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "SIM", "RUF"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "--cov=vimarsh --cov-report=term-missing"
+
+[tool.coverage.report]
+fail_under = 90

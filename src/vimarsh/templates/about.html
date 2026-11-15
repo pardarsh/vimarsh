@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block title %}Method · Vimarsh{% endblock %}
+{% block content %}
+    <article class="bill">
+        <h1>How Vimarsh works</h1>
+        <h2>Sources</h2>
+        <p>
+            Bills come only from the official listings of the Parliament of India at <a href="https://sansad.in">sansad.in</a>. For each bill Vimarsh takes its most recent official text: as passed by both houses, as passed by one house, or as introduced. No third-party summaries are used.
+        </p>
+        <h2>Analysis</h2>
+        <p>
+            The text is extracted locally and sent to a language model with a fixed, versioned prompt that asks for a neutral, factual description of what the bill does, returned as structured JSON. Very long bills are cut to their beginning and end (which hold the clauses, the Statement of Objects and Reasons and the Financial Memorandum) and marked as partial analyses.
+        </p>
+        <h2>Provenance</h2>
+        <p>
+            Every analysis records the official document URL, SHA-256 hashes of the document and of the extracted text, the provider, the requested and served model, the provider's response ID, the generation settings (temperature, thinking level), token usage including thinking tokens, how long the call took and how many attempts it needed, any fallback from another provider, the prompt and schema versions with a hash of both, the software versions, and a link to the public GitHub Actions run that produced it. Where the model provides one, its own summary of its reasoning is published too. Anyone can download the official text, check its hash and rerun the analysis. Everything is kept in the public <a href="https://github.com/pardarsh/vimarsh">git repository</a>, so every change has history.
+        </p>
+        <h2 id="prompt">Prompt</h2>
+        <p>
+            Prompt version {{ prompt_version }}, schema version {{ schema_version }}, SHA-256 <code>{{ prompt_sha256 }}</code>. The model receives this instruction, the JSON Schema below, and the extracted bill text.
+        </p>
+        <pre>{{ system_prompt }}</pre>
+        <details>
+            <summary>JSON Schema</summary>
+            <pre>{{ schema }}</pre>
+        </details>
+        <h2>Updates</h2>
+        <p>
+            The pipeline runs daily. When a new stage of a bill is published (for example the passed text), the bill is analysed again and its page is updated. Subscribe through the <a href="feed.xml">RSS feed</a>, or use the machine-readable <a href="bills.json">bills.json</a>.
+        </p>
+        <h2>Limits</h2>
+        <p>{{ disclaimer }} The analysis describes the bill; it does not judge it. Report mistakes as an issue on GitHub.</p>
+    </article>
+{% endblock %}

@@ -1,0 +1,22 @@
+name: Bug report
+description: Report a problem with the pipeline, the site or the feed.
+title: "bug: "
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Do not paste API keys. Security vulnerabilities belong in a private report (see SECURITY.md).
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: What went wrong, and what did you expect?
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs
+      description: Relevant workflow log lines, if any.
+      render: text

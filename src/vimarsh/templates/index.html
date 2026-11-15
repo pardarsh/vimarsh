@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block content %}
+    <section class="hero">
+        <p class="eyebrow">विमर्श · deliberation</p>
+        <h1>What bills in Parliament actually say</h1>
+        <p class="lede">
+            Every day Vimarsh reads newly introduced or amended bills from the official Sansad website and publishes a plain-language analysis, with the model, prompt and source hash recorded for each one.
+        </p>
+        <input id="filter"
+               class="filter"
+               type="search"
+               placeholder="Filter by title, ministry or sector"
+               aria-label="Filter bills">
+    </section>
+    {% if records %}
+        <ul class="bills" id="bills">
+            {% for r in records %}
+                <li class="card"
+                    data-search="{{ (r.title ~ ' ' ~ r.ministry ~ ' ' ~ r.analysis.affected_sectors|join(' '))|lower }}">
+                    <p class="meta">
+                        {{ r.house }} · Bill {{ r.bill_number }} of {{ r.year }} · introduced {{ r.introduced_date }} · <span class="pill">{{ r.status }}</span>
+                        {% if r.partial_analysis %}<span class="pill warn">partial</span>{% endif %}
+                    </p>
+                    <h2>
+                        <a href="bills/{{ r.bill_id }}.html">{{ r.title }}</a>
+                    </h2>
+                    <p>{{ r.analysis.summary_short }}</p>
+                    <p class="tags">
+                        {% for tag in r.analysis.affected_sectors %}<span class="tag">{{ tag }}</span>{% endfor %}
+                    </p>
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p class="muted">No bills have been analysed yet.</p>
+    {% endif %}
+    <script>
+        document.getElementById("filter").addEventListener("input", function(e) {
+            var q = e.target.value.toLowerCase();
+            document.querySelectorAll("#bills .card").forEach(function(card) {
+                card.hidden = q && card.dataset.search.indexOf(q) === -1;
+            });
+        });
+    </script>
+{% endblock %}

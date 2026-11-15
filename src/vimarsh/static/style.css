@@ -1,0 +1,110 @@
+/* Palette shared with the Pardarsh website. */
+:root {
+  --bg: #f6f3ec;
+  --surface: #fffdf8;
+  --ink: #1d1f24;
+  --ink-soft: #4a4e57;
+  --muted: #6b6f78;
+  --line: #e2ddd1;
+  --accent: #2f4b7a;
+  --accent-soft: #e6ebf3;
+  --warm: #9a5221;
+  --warm-soft: #f5e7da;
+  --serif: Georgia, "Times New Roman", serif;
+  --sans: system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: ui-monospace, Consolas, monospace;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #14161b;
+    --surface: #1b1e24;
+    --ink: #ebe7de;
+    --ink-soft: #b9b6ae;
+    --muted: #8d919a;
+    --line: #2b2f37;
+    --accent: #9db4dd;
+    --accent-soft: #232b3a;
+    --warm: #e0a072;
+    --warm-soft: #33261c;
+  }
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font: 400 17px/1.65 var(--sans);
+}
+
+a { color: var(--accent); }
+
+.wrap { max-width: 860px; margin: 0 auto; padding: 0 16px; }
+
+.site-header { border-bottom: 1px solid var(--line); background: var(--surface); }
+
+.nav { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding-top: 12px; padding-bottom: 12px; flex-wrap: wrap; }
+
+.brand { display: flex; align-items: center; gap: 10px; font: 600 20px var(--serif); color: var(--ink); text-decoration: none; }
+
+.mark { border-radius: 6px; }
+
+nav a { margin-left: 16px; color: var(--ink-soft); text-decoration: none; }
+
+nav a:first-child { margin-left: 0; }
+
+h1, h2 { font-family: var(--serif); line-height: 1.25; }
+
+h1 { font-size: 2rem; margin: 0.4em 0; }
+
+.hero { padding: 32px 0 16px; }
+
+.eyebrow { color: var(--warm); margin: 0; }
+
+.lede { font-size: 1.1rem; color: var(--ink-soft); }
+
+.filter { width: 100%; padding: 10px 12px; font: inherit; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); color: var(--ink); }
+
+.bills { list-style: none; padding: 0; }
+
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 16px 20px; margin-bottom: 16px; }
+
+.card h2 { font-size: 1.2rem; margin: 0.2em 0; }
+
+.card h2 a { color: var(--ink); text-decoration: none; }
+
+.card h2 a:hover { text-decoration: underline; }
+
+.meta { color: var(--muted); font-size: 0.9rem; margin: 0; }
+
+.pill, .tag { display: inline-block; padding: 0 8px; border-radius: 999px; font-size: 0.8rem; background: var(--accent-soft); color: var(--accent); }
+
+.tag { margin: 0 6px 6px 0; }
+
+.warn { background: var(--warm-soft); color: var(--warm); }
+
+.notice { background: var(--accent-soft); border-radius: 8px; padding: 10px 14px; font-size: 0.95rem; }
+
+.button { display: inline-block; padding: 8px 16px; border-radius: 8px; background: var(--accent); color: var(--surface); text-decoration: none; }
+
+.provenance { width: 100%; border-collapse: collapse; font-size: 0.9rem; table-layout: fixed; }
+
+.provenance th { text-align: left; width: 30%; color: var(--muted); font-weight: 500; vertical-align: top; }
+
+.provenance th, .provenance td { padding: 6px 0; border-bottom: 1px solid var(--line); overflow-wrap: anywhere; }
+
+code { font-family: var(--mono); font-size: 0.85em; }
+
+.footer { padding: 32px 16px; font-size: 0.85rem; }
+
+.muted { color: var(--muted); }
+
+pre { white-space: pre-wrap; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 12px; font: 0.85rem/1.5 var(--mono); }
+
+details { margin: 16px 0; }
+
+summary { cursor: pointer; color: var(--accent); }
+
+.thoughts { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 10px 14px; }

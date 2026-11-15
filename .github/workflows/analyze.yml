@@ -1,0 +1,86 @@
+# Daily: find new or amended bills on sansad.in, analyse them, and commit the
+# results (data/ and content/ only). Deploying is a separate workflow, so this
+# one never rebuilds the site and the two cannot trigger each other in a loop.
+name: Analyze bills
+
+on:
+  schedule:
+    - cron: "30 2 * * *" # 08:00 IST
+  # Run by hand from Actions -> Analyze bills -> Run workflow. Leave bill_ids
+  # empty for a normal run, or name bills to analyse just those.
+  workflow_dispatch:
+    inputs:
+      bill_ids:
+        description: "Bill IDs to analyse, comma-separated (e.g. ls-2026-153, rs-2026-lxxii). Empty = all pending."
+        required: false
+        default: ""
+      force:
+        description: "Re-analyse these bills even if their text has not changed"
+        type: boolean
+        default: false
+      since_date:
+        description: "Look for bills introduced on or after (YYYY-MM-DD); needed for older bills"
+        required: false
+        default: ""
+
+permissions:
+  contents: write
+
+concurrency:
+  group: analyze
+  cancel-in-progress: false
+
+jobs:
+  analyze:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: pip install .
+      - name: Analyze
+        # Inputs go through env, never straight into the script, so they cannot inject shell.
+        run: |
+          args=()
+          for id in $(echo "$BILL_IDS" | tr ',' ' '); do args+=(--bill "$id"); done
+          if [ "$FORCE" = "true" ]; then args+=(--force); fi
+          vimarsh run "${args[@]}"
+        env:
+          BILL_IDS: ${{ inputs.bill_ids }}
+          FORCE: ${{ inputs.force }}
+          # Keys come only from encrypted secrets; settings from repository variables.
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          PRIMARY_PROVIDER: ${{ vars.PRIMARY_PROVIDER }}
+          FALLBACK_PROVIDER: ${{ vars.FALLBACK_PROVIDER }}
+          GEMINI_MODEL: ${{ vars.GEMINI_MODEL }}
+          GEMINI_THINKING_LEVEL: ${{ vars.GEMINI_THINKING_LEVEL }}
+          REQUEST_TIMEOUT_SECONDS: ${{ vars.REQUEST_TIMEOUT_SECONDS }}
+          GROQ_MODEL: ${{ vars.GROQ_MODEL }}
+          REQUEST_DELAY_SECONDS: ${{ vars.REQUEST_DELAY_SECONDS }}
+          MAX_BILLS_PER_RUN: ${{ vars.MAX_BILLS_PER_RUN }}
+          MAX_RETRIES: ${{ vars.MAX_RETRIES }}
+          SINCE_DATE: ${{ inputs.since_date || vars.SINCE_DATE }}
+          GEMINI_MAX_INPUT_TOKENS: ${{ vars.GEMINI_MAX_INPUT_TOKENS }}
+          GROQ_MAX_INPUT_TOKENS: ${{ vars.GROQ_MAX_INPUT_TOKENS }}
+      # At most one commit per day, and only when a bill was analysed. Changes
+      # to data/ alone (retry counters, newly listed bills) wait for that commit.
+      - name: Commit results
+        if: ${{ !cancelled() }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          if [ -z "$(git status --porcelain content)" ]; then
+            echo "No new analyses; nothing to commit"
+            exit 0
+          fi
+          git add data content
+          git commit -m "chore(data): update bill analyses [skip ci]"
+          for attempt in 1 2 3 4; do
+            git pull --rebase && git push && exit 0
+            sleep $((attempt * 5))
+          done
+          exit 1

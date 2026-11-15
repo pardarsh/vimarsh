@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>{% block title %}Vimarsh{% endblock %}</title>
+        <meta name="description"
+              content="{% block description %}Neutral, attributed AI analysis of bills in the Parliament of India, from official sources.{% endblock %}">
+        <link rel="stylesheet" href="{{ root }}style.css">
+        <link rel="icon" type="image/png" href="{{ root }}favicon.png">
+        <link rel="alternate"
+              type="application/rss+xml"
+              title="Vimarsh"
+              href="{{ root }}feed.xml">
+    </head>
+    <body>
+        <header class="site-header">
+            <div class="wrap nav">
+                <a class="brand" href="{{ root }}index.html">
+                    <img class="mark"
+                         src="{{ root }}favicon.png"
+                         alt=""
+                         width="26"
+                         height="26">
+                    Vimarsh
+                </a>
+                <nav>
+                    <a href="{{ root }}index.html">Bills</a>
+                    <a href="{{ root }}about.html">Method</a>
+                    <a href="{{ root }}feed.xml">RSS</a>
+                    <a href="{{ root }}bills.json">JSON</a>
+                </nav>
+            </div>
+        </header>
+        <main class="wrap">
+            {% block content %}{% endblock %}
+        </main>
+        <footer class="wrap footer">
+            <p class="muted">{{ disclaimer }}</p>
+            <p class="muted">
+                Built by vimarsh {{ version }}, part of <a href="https://github.com/pardarsh">Pardarsh</a>. Source texts from <a href="https://sansad.in">sansad.in</a>.
+            </p>
+        </footer>
+    </body>
+</html>

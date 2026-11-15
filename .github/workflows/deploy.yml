@@ -1,0 +1,58 @@
+# Builds the static site, feed.xml and bills.json from content/ and publishes
+# them to GitHub Pages. Never commits. Runs after each analysis run (whose bot
+# commits do not trigger push events) and on pushes to master.
+name: Deploy site
+
+on:
+  workflow_run:
+    workflows: ["Analyze bills"]
+    types: [completed]
+  push:
+    branches: [master]
+    paths:
+      - "content/**"
+      - "src/**"
+      - "pyproject.toml"
+      - ".github/workflows/deploy.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion != 'cancelled'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: master
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: pip install .
+      - id: pages
+        uses: actions/configure-pages@v5
+      - run: vimarsh build --out public && cp CNAME public/
+        env:
+          SITE_URL: ${{ vars.SITE_URL || format('{0}/', steps.pages.outputs.base_url) }}
+      - uses: actions/upload-pages-artifact@v4
+        with:
+          path: public
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
