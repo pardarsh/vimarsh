@@ -39,7 +39,7 @@ jobs:
           cache: pip
       - run: pip install .
       - id: pages
-        uses: actions/configure-pages@v5
+        uses: actions/configure-pages@v6
       - run: vimarsh build --out public && cp CNAME public/
         env:
           SITE_URL: ${{ vars.SITE_URL || format('{0}/', steps.pages.outputs.base_url) }}
